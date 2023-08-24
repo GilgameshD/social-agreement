@@ -2,7 +2,7 @@
 Author: Wenhao Ding
 Email: wenhaod@andrew.cmu.edu
 Date: 2023-08-23 00:39:47
-LastEditTime: 2023-08-23 13:49:02
+LastEditTime: 2023-08-24 18:11:17
 Description: 
 '''
 
@@ -55,17 +55,18 @@ class GrokkModel(nn.Module):
         num_match = 1
         dataloader = DataLoader(match_data, num_workers=0, batch_size=num_match)
         data = next(iter(dataloader))
+        match_x, match_y = data[0].to(self.device), data[1].to(self.device)
 
         # sample two models
         models_idx = np.random.choice(len(self.transformers), 2, replace=False)
-        pred_1 = self.single_model_forward(x, models_idx[0])
-        pred_2 = self.single_model_forward(x, models_idx[1])
+        pred_1 = self.single_model_forward(match_x, models_idx[0])
+        pred_2 = self.single_model_forward(match_x, models_idx[1])
 
         # convert to log space
         pred_1 = F.log_softmax(pred_1, dim=1)
         pred_2 = F.log_softmax(pred_2, dim=1)
         kld = self.kl_loss(pred_1, pred_2) + self.kl_loss(pred_2, pred_1)
-        loss = ce_loss + kld * 0.1
+        loss = ce_loss + kld * 0.01
 
         log_dict = {
             'kld': (kld.item(), x.shape[0]),
