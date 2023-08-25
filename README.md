@@ -1,1 +1,1 @@
-# social-aggrement
+# social-agreement
